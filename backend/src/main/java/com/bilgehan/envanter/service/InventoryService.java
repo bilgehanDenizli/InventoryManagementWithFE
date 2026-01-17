@@ -1,7 +1,6 @@
 package com.bilgehan.envanter.service;
 
 import com.bilgehan.envanter.kafka.producer.KafkaEvent;
-import com.bilgehan.envanter.kafka.producer.KafkaProducer;
 import com.bilgehan.envanter.model.dto.InventoryDto;
 import com.bilgehan.envanter.model.entity.Inventory;
 import com.bilgehan.envanter.model.entity.InventoryHistory;
