@@ -9,6 +9,9 @@ spring:
     show-sql: 'true'
     hibernate:
       ddl-auto: update
+
+server:
+  port: 8080
 #KAFKA
   kafka:
     bootstrap-server: "127.0.0.1:9092"
