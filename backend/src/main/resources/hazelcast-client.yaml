@@ -1,0 +1,6 @@
+hazelcast:
+  cluster-name: Inventory_Management
+  network:
+    join:
+      multicast:
+        enabled: true

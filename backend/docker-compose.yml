@@ -1,0 +1,140 @@
+version: "3.8"
+
+networks:
+  app_net:
+
+volumes:
+  jenkins_home:
+  db_data:
+  web_content:   # Shared volume for Jenkins <-> Apache
+
+services:
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ~/apps/postgres:/var/lib/postgresql/data
+    restart: always
+    environment:
+      - POSTGRES_DB=inventory_management
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    networks:
+      - app_net
+
+  hazelcast:
+    image: hazelcast/hazelcast:latest-slim
+    container_name: hazelcast
+    ports:
+      - "5701:5701"
+    environment:
+      - HZ_CLUSTERNAME=Inventory-Management
+      - HZ_NETWORK_PUBLICADDRESS=172.22.0.2
+    networks:
+      - app_net
+
+  management-center:
+    image: hazelcast/management-center:latest
+    container_name: hazelcast_mc
+    ports:
+      - "8081:8000"   # Changed to avoid conflict with Jenkins
+    environment:
+      - MC_DEFAULT_CLUSTER=Inventory-Management
+      - MC_DEFAULT_CLUSTER_MEMBERS=hazelcast
+      - MC_HTTP_PORT=8000
+    networks:
+      - app_net
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:5.4.0
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - app_net
+
+  broker:
+    image: confluentinc/cp-server:5.4.0
+    container_name: broker
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:29092
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: "true"
+      CONFLUENT_SUPPORT_CUSTOMER_ID: "anonymous"
+    networks:
+      - app_net
+
+  kafka-tools:
+    image: confluentinc/cp-kafka:5.4.0
+    container_name: kafka-tools
+    command: ["tail", "-f", "/dev/null"]
+    network_mode: "host"
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:5.4.0
+    container_name: control-center
+    depends_on:
+      - zookeeper
+      - broker
+    ports:
+      - "9021:9021"
+    environment:
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker:29092'
+      CONTROL_CENTER_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS: 1
+      CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS: 1
+      CONFLUENT_METRICS_TOPIC_REPLICATION: 1
+      PORT: 9021
+    networks:
+      - app_net
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    user: root
+    privileged: true
+    ports:
+      - "9090:8080"   # Jenkins UI
+      - "50000:50000" # Agent communication
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/local/bin/docker
+      - web_content:/var/www/html   # Shared with Apache
+      - "C:/Program Files/Java/jdk-17:/opt/jdk-17"
+
+    environment:
+      JAVA_OPTS: "-Djenkins.install.runSetupWizard=true"
+    networks:
+      - app_net
+
+  apache:
+    image: httpd:2.4
+    container_name: apache_server
+    ports:
+      - "2222:22"
+      - "8002:80"
+    volumes:
+      - web_content:/usr/local/apache2/htdocs/  # Shared with Jenkins
+    networks:
+      - app_net
