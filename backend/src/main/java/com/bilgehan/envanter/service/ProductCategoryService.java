@@ -20,8 +20,7 @@ public class ProductCategoryService {
     public List<ProductCategoryDto> getCategories() {
         List<ProductCategory> categoryList = productCategoryRepository.findAll();
         List<ProductCategoryDto> categoryDtoList = new ArrayList<>();
-        for (ProductCategory productCategory: categoryList
-             ) {
+        for (ProductCategory productCategory: categoryList) {
             categoryDtoList.add(
                     ProductCategoryDto.builder()
                     .id(productCategory.getId())

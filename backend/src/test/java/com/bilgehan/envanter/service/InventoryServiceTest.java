@@ -1,5 +1,6 @@
 package com.bilgehan.envanter.service;
 
+import com.bilgehan.envanter.controller.converter.Converter;
 import com.bilgehan.envanter.kafka.producer.KafkaEvent;
 import com.bilgehan.envanter.kafka.producer.KafkaProducer;
 import com.bilgehan.envanter.model.dto.InventoryDto;
@@ -29,26 +30,26 @@ public class InventoryServiceTest {
     private InventoryService inventoryService;
 
     private InventoryRepository inventoryRepository;
-    private InventoryHistoryRepository inventoryHistoryRepository;
     private ProductRepository productRepository;
     private WarehouseRepository warehouseRepository;
     private KafkaEvent kafkaEvent;
+    private Converter converter;
 
 
     @Before
     public void setUp() throws Exception {
         inventoryRepository = Mockito.mock(InventoryRepository.class);
-        inventoryHistoryRepository = Mockito.mock(InventoryHistoryRepository.class);
         productRepository = Mockito.mock(ProductRepository.class);
         warehouseRepository = Mockito.mock(WarehouseRepository.class);
         kafkaEvent = Mockito.mock(KafkaEvent.class);
+        converter = Mockito.mock(Converter.class);
 
         inventoryService = new InventoryService(
                 inventoryRepository,
-                inventoryHistoryRepository,
                 productRepository,
                 warehouseRepository,
-                kafkaEvent);
+                kafkaEvent,
+                converter);
     }
 
     @Test(expected = NotAcceptableException.class)

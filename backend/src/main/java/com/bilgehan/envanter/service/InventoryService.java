@@ -1,11 +1,12 @@
 package com.bilgehan.envanter.service;
 
+import com.bilgehan.envanter.controller.converter.Converter;
 import com.bilgehan.envanter.kafka.producer.KafkaEvent;
 import com.bilgehan.envanter.model.dto.InventoryDto;
-import com.bilgehan.envanter.model.entity.Inventory;
-import com.bilgehan.envanter.model.entity.InventoryHistory;
-import com.bilgehan.envanter.model.entity.Product;
-import com.bilgehan.envanter.model.entity.Warehouse;
+import com.bilgehan.envanter.model.dto.ProductCategoryDto;
+import com.bilgehan.envanter.model.dto.ProductDto;
+import com.bilgehan.envanter.model.dto.WarehouseDto;
+import com.bilgehan.envanter.model.entity.*;
 import com.bilgehan.envanter.model.request.*;
 import com.bilgehan.envanter.repository.InventoryHistoryRepository;
 import com.bilgehan.envanter.repository.InventoryRepository;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -25,18 +27,18 @@ public class InventoryService {
 
     Logger logger = LoggerFactory.getLogger(InventoryService.class);
     private final InventoryRepository inventoryRepository;
-    private final InventoryHistoryRepository inventoryHistoryRepository;
     private final ProductRepository productRepository;
     private final WarehouseRepository warehouseRepository;
     private final KafkaEvent kafkaEvent;
+    private final Converter converter;
 
-    public InventoryService(InventoryRepository inventoryRepository, InventoryHistoryRepository inventoryHistoryRepository, ProductRepository productRepository,
-                            WarehouseRepository warehouseRepository, KafkaEvent kafkaEvent) {
+    public InventoryService(InventoryRepository inventoryRepository, ProductRepository productRepository,
+                            WarehouseRepository warehouseRepository, KafkaEvent kafkaEvent, Converter converter) {
         this.inventoryRepository = inventoryRepository;
-        this.inventoryHistoryRepository = inventoryHistoryRepository;
         this.productRepository = productRepository;
         this.warehouseRepository = warehouseRepository;
         this.kafkaEvent = kafkaEvent;
+        this.converter = converter;
     }
 
 
@@ -115,12 +117,12 @@ public class InventoryService {
         }
         Set<Inventory> inventorySet = inventoryRepository.getInventoryByWarehouse_Name(warehouseName);
 
-        if (inventorySet == null || inventorySet.size() == 0) {
+        if (inventorySet == null || inventorySet.isEmpty()) {
             logger.error("Warehouse inventory by that name not found.");
             throw new NotAcceptableException("Warehouse inventory by that name not found.");
         }
 
-        return mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtos(inventorySet);
     }
 
     public Set<InventoryDto> getByCity(GetInvByCityRequest request) {
@@ -131,12 +133,12 @@ public class InventoryService {
 
         Set<Inventory> inventorySet = inventoryRepository.getInventoryByWarehouse_City(request.getCity());
 
-        if (inventorySet == null || inventorySet.size() == 0) {
+        if (inventorySet == null || inventorySet.isEmpty()) {
             logger.error("Warehouse inventory in that city not found.");
             throw new NotAcceptableException("Warehouse inventory in that city not found.");
         }
 
-        return mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtos(inventorySet);
     }
 
     public Set<InventoryDto> getByRegion(GetInvByRegionRequest request) {
@@ -147,12 +149,12 @@ public class InventoryService {
 
         Set<Inventory> inventorySet = inventoryRepository.getInventoryByWarehouse_Region(request.getRegion());
 
-        if (inventorySet == null || inventorySet.size() == 0) {
+        if (inventorySet == null || inventorySet.isEmpty()) {
             logger.error("Warehouse inventory in that region not found.");
             throw new NotAcceptableException("Warehouse inventory in that region not found.");
         }
 
-        return mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtos(inventorySet);
     }
 
     public Set<InventoryDto> getByProductCategory(GetInvByProductCategoryRequest request) {
@@ -163,23 +165,23 @@ public class InventoryService {
 
         Set<Inventory> inventorySet = inventoryRepository.getInventoryByProduct_ProductCategory_Category(request.getCategory());
 
-        if (inventorySet == null || inventorySet.size() == 0) {
+        if (inventorySet == null || inventorySet.isEmpty()) {
             logger.error("Inventory with the given product category not found.");
             throw new NotAcceptableException("Inventory with the given product category not found.");
         }
 
-        return mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtos(inventorySet);
     }
 
     public Set<InventoryDto> getByProductId(GetInvByProductIdRequest request) {
         Set<Inventory> inventorySet = inventoryRepository.getInventoryByProduct_Id(request.getProductId());
 
-        if (inventorySet == null || inventorySet.size() == 0) {
+        if (inventorySet == null || inventorySet.isEmpty()) {
             logger.error("Inventory with the given product ID not found.");
             throw new NotAcceptableException("Inventory with the given product ID not found.");
         }
 
-        return mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtos(inventorySet);
     }
 
     public Set<InventoryDto> getByProductName(GetInvByProductNameRequest request) {
@@ -190,36 +192,52 @@ public class InventoryService {
 
         Set<Inventory> inventorySet = inventoryRepository.getInventoryByProduct_Name(request.getProductName());
 
-        if (inventorySet == null || inventorySet.size() == 0){
+        if (inventorySet == null || inventorySet.isEmpty()) {
             logger.error("Inventory with the given product name not found.");
             throw new NotAcceptableException("Inventory with the given product name not found.");
         }
 
-        return mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtos(inventorySet);
     }
 
     public Set<InventoryDto> mapInventoryDtos(Set<Inventory> inventorySet) {
-        Set<InventoryDto> inventoryDtoSet = new HashSet<>();
-        /*for (Inventory inventory : inventorySet
-        ) {
-            inventoryDtoSet.add(InventoryDto.builder()
-                    .inventoryId(inventory.getId())
-                    .product(inventory.getProduct())
-                    .warehouse(inventory.getWarehouse())
-                    .amount(inventory.getAmount())
-                    .isDeleted(inventory.isDeleted())
-                    .updatedAt(inventory.getUpdatedAt())
-                    .build());
-        }*/
-        inventorySet.forEach(inventory -> inventoryDtoSet.add(InventoryDto.builder()
-                .inventoryId(inventory.getId())
-                .product(inventory.getProduct())
-                .warehouse(inventory.getWarehouse())
-                .amount(inventory.getAmount())
-                .isDeleted(inventory.isDeleted())
-                .updatedAt(inventory.getUpdatedAt())
-                .build()));
-        return inventoryDtoSet;
+        return inventorySet.stream()
+                .map(this::mapInventoryDto).
+                collect(Collectors.toSet());
     }
 
+    private InventoryDto mapInventoryDto(Inventory inventory) {
+        return InventoryDto.builder()
+                .inventoryId(inventory.getId())
+                .amount(inventory.getAmount())
+                .product(mapProductDto(inventory.getProduct()))
+                .warehouse(mapWarehouseDto(inventory.getWarehouse()))
+                .updatedAt(inventory.getUpdatedAt())
+                .isDeleted(inventory.isDeleted())
+                .build();
+    }
+
+    private ProductDto mapProductDto(Product product) {
+        return ProductDto.builder()
+                .id(product.getId())
+                .productCategory(mapProductCategoryDto(product.getProductCategory()))
+                .name(product.getName())
+                .build();
+    }
+
+    private ProductCategoryDto mapProductCategoryDto(ProductCategory productCategory) {
+        return ProductCategoryDto.builder()
+                .id(productCategory.getId())
+                .category(productCategory.getCategory())
+                .build();
+    }
+
+    private WarehouseDto mapWarehouseDto(Warehouse warehouse) {
+        return WarehouseDto.builder()
+                .id(warehouse.getId())
+                .city(warehouse.getCity())
+                .name(warehouse.getName())
+                .region(warehouse.getRegion())
+                .build();
+    }
 }

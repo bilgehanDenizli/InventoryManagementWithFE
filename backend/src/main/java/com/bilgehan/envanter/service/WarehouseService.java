@@ -24,8 +24,7 @@ public class WarehouseService {
         List<WarehouseDto> warehouseDtoList = new ArrayList<>();
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getLimit());
         Page<Warehouse> warehouseList = warehouseRepository.findAllWithPagingOrderById(pageRequest);
-        for (Warehouse warehouse : warehouseList
-        ) {
+        for (Warehouse warehouse : warehouseList) {
             WarehouseDto warehouseDto = WarehouseDto.builder()
                     .id(warehouse.getId())
                     .name(warehouse.getName())

@@ -1,5 +1,6 @@
 package com.bilgehan.envanter.service;
 
+import com.bilgehan.envanter.controller.converter.Converter;
 import com.bilgehan.envanter.model.dto.ProductDto;
 import com.bilgehan.envanter.model.entity.Product;
 import com.bilgehan.envanter.model.request.UpdateProductRequest;
@@ -20,23 +21,25 @@ public class ProductService {
 
     Logger logger = LoggerFactory.getLogger(ProductService.class);
     private final ProductRepository productRepository;
+    private final Converter converter;
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, Converter converter) {
         this.productRepository = productRepository;
-
+        this.converter = converter;
     }
 
     public ProductDto getProductById(long id) {
-        Optional<Product> product = productRepository.findById(id);
-        if (!product.isPresent()) {
+        Optional<Product> productOpt = productRepository.findById(id);
+        if (productOpt.isEmpty()) {
             logger.error("Product not found.");
             throw new NotAcceptableException("Product not found.");
         }
+        Product product = productOpt.get();
 
         return ProductDto.builder()
-                .id(product.get().getId())
-                .name(product.get().getName())
-                .productCategory(product.get().getProductCategory())
+                .id(product.getId())
+                .name(product.getName())
+                .productCategory(converter.mapProductCategoryDto(product.getProductCategory()))
                 .build();
     }
 
@@ -49,7 +52,7 @@ public class ProductService {
                     ProductDto.builder()
                             .id(product.getId())
                             .name(product.getName())
-                            .productCategory(product.getProductCategory())
+                            .productCategory(converter.mapProductCategoryDto(product.getProductCategory()))
                             .build()
             );
         }

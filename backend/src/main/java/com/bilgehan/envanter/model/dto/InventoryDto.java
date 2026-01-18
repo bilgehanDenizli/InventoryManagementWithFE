@@ -10,11 +10,11 @@ import java.sql.Timestamp;
 
 @Data
 @Builder
-public class InventoryDto implements Serializable{
+public class InventoryDto implements Serializable {
     private Long inventoryId;
     private long amount;
-    private Product product;
-    private Warehouse warehouse;
+    private ProductDto product;
+    private WarehouseDto warehouse;
     private Timestamp updatedAt;
     private boolean isDeleted;
 }
