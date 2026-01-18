@@ -1,0 +1,40 @@
+<div class="warehouse-container">
+    <h2>Warehouses</h2>
+    
+    @if (isLoading()) {
+        <div class="loading">Loading...</div>
+    }
+    @if (errorMessage()) {
+        <div class="error">{{ errorMessage() }}</div>
+    }
+
+    @if (warehouses().length > 0) {
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>City</th>
+                    <th>Region</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (warehouse of warehouses(); track warehouse.id) {
+                    <tr>
+                        <td>{{ warehouse.id }}</td>
+                        <td>{{ warehouse.name }}</td>
+                        <td>{{ warehouse.city }}</td>
+                        <td>{{ warehouse.region }}</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <!-- Pagination Controls -->
+    <div class="pagination">
+        <button (click)="previousPage()" [disabled]="currentPage() === 0">Previous</button>
+        <span>Page {{ currentPage() + 1 }}</span>
+        <button (click)="nextPage()">Next</button>
+    </div>
+</div>
