@@ -2,14 +2,12 @@ package com.bilgehan.envanter.service;
 
 import com.bilgehan.envanter.controller.converter.Converter;
 import com.bilgehan.envanter.kafka.producer.KafkaEvent;
-import com.bilgehan.envanter.kafka.producer.KafkaProducer;
 import com.bilgehan.envanter.model.dto.InventoryDto;
 import com.bilgehan.envanter.model.entity.Inventory;
 import com.bilgehan.envanter.model.entity.Product;
 import com.bilgehan.envanter.model.entity.ProductCategory;
 import com.bilgehan.envanter.model.entity.Warehouse;
 import com.bilgehan.envanter.model.request.*;
-import com.bilgehan.envanter.repository.InventoryHistoryRepository;
 import com.bilgehan.envanter.repository.InventoryRepository;
 import com.bilgehan.envanter.repository.ProductRepository;
 import com.bilgehan.envanter.repository.WarehouseRepository;
@@ -104,7 +102,7 @@ public class InventoryServiceTest {
         inventorySet.add(generateInventory());
 
         Mockito.when(inventoryRepository.getInventoryByWarehouse_Name(request.getWarehouseName())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByWarehouseName(request.getWarehouseName());
 
@@ -122,7 +120,7 @@ public class InventoryServiceTest {
 
         Mockito.when(inventoryRepository.getInventoryByWarehouse_Name(request.getWarehouseName())).thenReturn(inventorySet);
         Mockito.when(inventoryRepository.getInventoryByWarehouse_Name(request.getWarehouseName())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         //test should stop after this
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByWarehouseName(request.getWarehouseName());
@@ -141,7 +139,7 @@ public class InventoryServiceTest {
         inventorySet.add(generateInventory());
 
         Mockito.when(inventoryRepository.getInventoryByWarehouse_City(request.getCity())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByCity(request);
 
@@ -158,7 +156,7 @@ public class InventoryServiceTest {
         Set<Inventory> inventorySet = new HashSet<>();
 
         Mockito.when(inventoryRepository.getInventoryByWarehouse_City(request.getCity())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         //test should stop after this
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByCity(request);
@@ -177,7 +175,7 @@ public class InventoryServiceTest {
         inventorySet.add(generateInventory());
 
         Mockito.when(inventoryRepository.getInventoryByWarehouse_Region(request.getRegion())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByRegion(request);
 
@@ -194,7 +192,7 @@ public class InventoryServiceTest {
         Set<Inventory> inventorySet = new HashSet<>();
 
         Mockito.when(inventoryRepository.getInventoryByWarehouse_Region(request.getRegion())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         //test should stop after this
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByRegion(request);
@@ -213,7 +211,7 @@ public class InventoryServiceTest {
         inventorySet.add(generateInventory());
 
         Mockito.when(inventoryRepository.getInventoryByProduct_ProductCategory_Category(request.getCategory())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByProductCategory(request);
 
@@ -230,7 +228,7 @@ public class InventoryServiceTest {
         Set<Inventory> inventorySet = new HashSet<>();
 
         Mockito.when(inventoryRepository.getInventoryByProduct_Name(request.getCategory())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         //test should stop after this
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByProductCategory(request);
@@ -249,7 +247,7 @@ public class InventoryServiceTest {
         inventorySet.add(generateInventory());
 
         Mockito.when(inventoryRepository.getInventoryByProduct_Id(request.getProductId())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByProductId(request);
 
@@ -266,7 +264,7 @@ public class InventoryServiceTest {
         Set<Inventory> inventorySet = new HashSet<>();
 
         Mockito.when(inventoryRepository.getInventoryByProduct_Id(request.getProductId())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         //test should stop after this
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByProductId(request);
@@ -285,7 +283,7 @@ public class InventoryServiceTest {
         inventorySet.add(generateInventory());
 
         Mockito.when(inventoryRepository.getInventoryByProduct_Name(request.getProductName())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByProductName(request);
 
@@ -302,7 +300,7 @@ public class InventoryServiceTest {
         Set<Inventory> inventorySet = new HashSet<>();
 
         Mockito.when(inventoryRepository.getInventoryByProduct_Name(request.getProductName())).thenReturn(inventorySet);
-        Set<InventoryDto> inventoryDtos = inventoryService.mapInventoryDtos(inventorySet);
+        Set<InventoryDto> inventoryDtos = converter.mapInventoryDtoList(inventorySet);
 
         //test should stop after this
         Set<InventoryDto> inventoryDtoSetResult = inventoryService.getByProductName(request);

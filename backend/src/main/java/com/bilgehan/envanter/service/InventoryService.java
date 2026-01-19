@@ -3,9 +3,6 @@ package com.bilgehan.envanter.service;
 import com.bilgehan.envanter.controller.converter.Converter;
 import com.bilgehan.envanter.kafka.producer.KafkaEvent;
 import com.bilgehan.envanter.model.dto.InventoryDto;
-import com.bilgehan.envanter.model.dto.ProductCategoryDto;
-import com.bilgehan.envanter.model.dto.ProductDto;
-import com.bilgehan.envanter.model.dto.WarehouseDto;
 import com.bilgehan.envanter.model.entity.*;
 import com.bilgehan.envanter.model.request.*;
 import com.bilgehan.envanter.repository.InventoryRepository;
@@ -15,10 +12,9 @@ import com.bilgehan.envanter.exception.NotAcceptableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
-import java.util.stream.Collectors;
-
 
 @Service
 public class InventoryService {
@@ -41,7 +37,6 @@ public class InventoryService {
 
 
     public void addProduct(AddProductToInventoryRequest request) {
-
         if (request.getAmount() == 0) {
             logger.error("You cant add or take zero products.");
             throw new NotAcceptableException("You cant add or take zero products.");
@@ -198,44 +193,24 @@ public class InventoryService {
         return converter.mapInventoryDtoList(inventorySet);
     }
 
-    public Set<InventoryDto> mapInventoryDtos(Set<Inventory> inventorySet) {
-        return inventorySet.stream()
-                .map(this::mapInventoryDto).
-                collect(Collectors.toSet());
-    }
+    @Transactional(readOnly = true)
+    public Set<InventoryDto> getInventory(GetInventoryItemsRequest request) {
+        final var filterType = request.getFilterType();
+        final var filterValue = request.getFilterValue();
 
-    private InventoryDto mapInventoryDto(Inventory inventory) {
-        return InventoryDto.builder()
-                .inventoryId(inventory.getId())
-                .amount(inventory.getAmount())
-                .product(mapProductDto(inventory.getProduct()))
-                .warehouse(mapWarehouseDto(inventory.getWarehouse()))
-                .updatedAt(inventory.getUpdatedAt())
-                .isDeleted(inventory.isDeleted())
-                .build();
-    }
-
-    private ProductDto mapProductDto(Product product) {
-        return ProductDto.builder()
-                .id(product.getId())
-                .productCategory(mapProductCategoryDto(product.getProductCategory()))
-                .name(product.getName())
-                .build();
-    }
-
-    private ProductCategoryDto mapProductCategoryDto(ProductCategory productCategory) {
-        return ProductCategoryDto.builder()
-                .id(productCategory.getId())
-                .category(productCategory.getCategory())
-                .build();
-    }
-
-    private WarehouseDto mapWarehouseDto(Warehouse warehouse) {
-        return WarehouseDto.builder()
-                .id(warehouse.getId())
-                .city(warehouse.getCity())
-                .name(warehouse.getName())
-                .region(warehouse.getRegion())
-                .build();
+        return switch (filterType) {
+            case WAREHOUSE_NAME ->
+                    converter.mapInventoryDtoList(inventoryRepository.getInventoryByWarehouse_Name(filterValue));
+            case WAREHOUSE_CITY ->
+                    converter.mapInventoryDtoList(inventoryRepository.getInventoryByWarehouse_City(filterValue));
+            case WAREHOUSE_REGION ->
+                    converter.mapInventoryDtoList(inventoryRepository.getInventoryByWarehouse_Region(filterValue));
+            case PRODUCT_NAME ->
+                    converter.mapInventoryDtoList(inventoryRepository.getInventoryByProduct_Name(filterValue));
+            case PRODUCT_CATEGORY ->
+                    converter.mapInventoryDtoList(inventoryRepository.getInventoryByProduct_ProductCategory_Category(filterValue));
+            case PRODUCT_ID ->
+                    converter.mapInventoryDtoList(inventoryRepository.getInventoryByProduct_Id(Long.parseLong(filterValue)));
+        };
     }
 }

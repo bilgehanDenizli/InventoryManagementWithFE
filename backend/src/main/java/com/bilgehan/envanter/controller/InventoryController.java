@@ -34,34 +34,44 @@ public class InventoryController {
         return ResponseEntity.ok().build();
     }
 
+    @Deprecated
     @PostMapping("/byWarehouseName")
-    @Transactional(readOnly = true)
     public ResponseEntity<Set<InventoryDto>> getByWarehouseName(@RequestBody GetInvByWarehouseNameRequest request){
         return ResponseEntity.ok(inventoryService.getByWarehouseName(request.getWarehouseName()));
     }
 
+    @Deprecated
     @PostMapping("/byWarehouseCity")
     public ResponseEntity<Set<InventoryDto>> getByCity(@RequestBody GetInvByCityRequest request){
         return ResponseEntity.ok(inventoryService.getByCity(request));
     }
 
+    @Deprecated
     @PostMapping("/byWarehouseRegion")
     public ResponseEntity<Set<InventoryDto>> getByRegion(@RequestBody GetInvByRegionRequest request){
         return ResponseEntity.ok(inventoryService.getByRegion(request));
     }
 
+    @Deprecated
     @PostMapping("/byProductCategory")
     public ResponseEntity<Set<InventoryDto>> getByProductCategory(@RequestBody GetInvByProductCategoryRequest request){
         return ResponseEntity.ok(inventoryService.getByProductCategory(request));
     }
 
+    @Deprecated
     @PostMapping("/byProductId")
     public ResponseEntity<Set<InventoryDto>> getByProductId(@RequestBody GetInvByProductIdRequest request){
         return ResponseEntity.ok(inventoryService.getByProductId(request));
     }
 
+    @Deprecated
     @PostMapping("/byProductName")
     public ResponseEntity<Set<InventoryDto>> getByProductName(@RequestBody GetInvByProductNameRequest request){
         return ResponseEntity.ok(inventoryService.getByProductName(request));
+    }
+
+    @PostMapping("/")
+    public ResponseEntity<Set<InventoryDto>> getInventory(@RequestBody GetInventoryItemsRequest request){
+        return ResponseEntity.ok(inventoryService.getInventory(request));
     }
 }
