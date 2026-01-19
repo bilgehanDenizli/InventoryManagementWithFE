@@ -10,13 +10,14 @@ import com.bilgehan.envanter.model.entity.ProductCategory;
 import com.bilgehan.envanter.model.entity.Warehouse;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
 public class Converter {
 
-    public Set<InventoryDto> mapInventoryDtos(Set<Inventory> inventorySet) {
+    public Set<InventoryDto> mapInventoryDtoList(Set<Inventory> inventorySet) {
         return inventorySet.stream()
                 .map(this::mapInventoryDto).
                 collect(Collectors.toSet());
@@ -55,5 +56,11 @@ public class Converter {
                 .name(warehouse.getName())
                 .region(warehouse.getRegion())
                 .build();
+    }
+
+    public List<WarehouseDto> mapWarehouseDtoList(Set<Warehouse> warehouses) {
+        return warehouses.stream()
+                .map(this::mapWarehouseDto)
+                .collect(Collectors.toList());
     }
 }

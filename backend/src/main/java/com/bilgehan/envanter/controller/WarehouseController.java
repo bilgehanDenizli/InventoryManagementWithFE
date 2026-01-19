@@ -1,6 +1,7 @@
 package com.bilgehan.envanter.controller;
 
 import com.bilgehan.envanter.model.dto.WarehouseDto;
+import com.bilgehan.envanter.model.request.GetWarehouseByIdRequest;
 import com.bilgehan.envanter.model.request.GetWarehousesRequest;
 import com.bilgehan.envanter.service.WarehouseService;
 import org.springframework.http.ResponseEntity;
@@ -25,5 +26,10 @@ public class WarehouseController {
     @PostMapping("/")
     public ResponseEntity<List<WarehouseDto>> getWarehouses(@RequestBody GetWarehousesRequest request){
         return ResponseEntity.ok(warehouseService.getWarehouses(request));
+    }
+
+    @PostMapping("/detail")
+    public ResponseEntity<WarehouseDto> getWarehouseById(@RequestBody GetWarehouseByIdRequest request){
+        return ResponseEntity.ok(warehouseService.getWarehouseById(request.getWarehouseId()));
     }
 }

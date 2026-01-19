@@ -8,7 +8,6 @@ import com.bilgehan.envanter.model.dto.ProductDto;
 import com.bilgehan.envanter.model.dto.WarehouseDto;
 import com.bilgehan.envanter.model.entity.*;
 import com.bilgehan.envanter.model.request.*;
-import com.bilgehan.envanter.repository.InventoryHistoryRepository;
 import com.bilgehan.envanter.repository.InventoryRepository;
 import com.bilgehan.envanter.repository.ProductRepository;
 import com.bilgehan.envanter.repository.WarehouseRepository;
@@ -17,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -122,7 +120,7 @@ public class InventoryService {
             throw new NotAcceptableException("Warehouse inventory by that name not found.");
         }
 
-        return converter.mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtoList(inventorySet);
     }
 
     public Set<InventoryDto> getByCity(GetInvByCityRequest request) {
@@ -138,7 +136,7 @@ public class InventoryService {
             throw new NotAcceptableException("Warehouse inventory in that city not found.");
         }
 
-        return converter.mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtoList(inventorySet);
     }
 
     public Set<InventoryDto> getByRegion(GetInvByRegionRequest request) {
@@ -154,7 +152,7 @@ public class InventoryService {
             throw new NotAcceptableException("Warehouse inventory in that region not found.");
         }
 
-        return converter.mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtoList(inventorySet);
     }
 
     public Set<InventoryDto> getByProductCategory(GetInvByProductCategoryRequest request) {
@@ -170,7 +168,7 @@ public class InventoryService {
             throw new NotAcceptableException("Inventory with the given product category not found.");
         }
 
-        return converter.mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtoList(inventorySet);
     }
 
     public Set<InventoryDto> getByProductId(GetInvByProductIdRequest request) {
@@ -181,7 +179,7 @@ public class InventoryService {
             throw new NotAcceptableException("Inventory with the given product ID not found.");
         }
 
-        return converter.mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtoList(inventorySet);
     }
 
     public Set<InventoryDto> getByProductName(GetInvByProductNameRequest request) {
@@ -197,7 +195,7 @@ public class InventoryService {
             throw new NotAcceptableException("Inventory with the given product name not found.");
         }
 
-        return converter.mapInventoryDtos(inventorySet);
+        return converter.mapInventoryDtoList(inventorySet);
     }
 
     public Set<InventoryDto> mapInventoryDtos(Set<Inventory> inventorySet) {

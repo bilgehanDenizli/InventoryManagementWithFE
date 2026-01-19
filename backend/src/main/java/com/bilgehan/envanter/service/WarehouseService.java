@@ -1,5 +1,6 @@
 package com.bilgehan.envanter.service;
 
+import com.bilgehan.envanter.controller.converter.Converter;
 import com.bilgehan.envanter.model.dto.WarehouseDto;
 import com.bilgehan.envanter.model.entity.Warehouse;
 import com.bilgehan.envanter.model.request.GetWarehousesRequest;
@@ -8,41 +9,28 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class WarehouseService {
 
     private final WarehouseRepository warehouseRepository;
+    private final Converter converter;
 
-    public WarehouseService(WarehouseRepository warehouseRepository) {
+    public WarehouseService(WarehouseRepository warehouseRepository, Converter converter) {
         this.warehouseRepository = warehouseRepository;
+        this.converter = converter;
     }
 
     public List<WarehouseDto> getWarehouses(GetWarehousesRequest request) {
-        List<WarehouseDto> warehouseDtoList = new ArrayList<>();
         PageRequest pageRequest = PageRequest.of(request.getPage(), request.getLimit());
         Page<Warehouse> warehouseList = warehouseRepository.findAllWithPagingOrderById(pageRequest);
-        for (Warehouse warehouse : warehouseList) {
-            WarehouseDto warehouseDto = WarehouseDto.builder()
-                    .id(warehouse.getId())
-                    .name(warehouse.getName())
-                    .city(warehouse.getCity())
-                    .region(warehouse.getRegion())
-                    .build();
-            warehouseDtoList.add(warehouseDto);
-        }
-        return warehouseDtoList;
+        return converter.mapWarehouseDtoList(warehouseList.stream().collect(Collectors.toSet()));
     }
 
     public WarehouseDto getWarehouseById(long warehouseId) {
         Warehouse warehouse = warehouseRepository.getWarehouseById(warehouseId);
-        return WarehouseDto.builder()
-                .id(warehouseId)
-                .city(warehouse.getCity())
-                .name(warehouse.getName())
-                .region(warehouse.getRegion())
-                .build();
+        return converter.mapWarehouseDto(warehouse);
     }
 }

@@ -1,5 +1,6 @@
 package com.bilgehan.envanter.service;
 
+import com.bilgehan.envanter.controller.converter.Converter;
 import com.bilgehan.envanter.model.dto.WarehouseDto;
 import com.bilgehan.envanter.model.entity.Warehouse;
 import com.bilgehan.envanter.model.request.GetWarehousesRequest;
@@ -21,12 +22,14 @@ public class WarehouseServiceTest {
     private WarehouseService warehouseService;
 
     private WarehouseRepository warehouseRepository;
+    private Converter converter;
 
     @Before
     public void setUp() throws Exception {
         warehouseRepository = Mockito.mock(WarehouseRepository.class);
+        converter = Mockito.mock(Converter.class);
 
-        warehouseService = new WarehouseService(warehouseRepository);
+        warehouseService = new WarehouseService(warehouseRepository, converter);
     }
 
     @Test
