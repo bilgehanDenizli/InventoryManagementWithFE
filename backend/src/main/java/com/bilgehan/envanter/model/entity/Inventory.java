@@ -10,6 +10,7 @@ import org.hibernate.annotations.Where;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Builder
 @Data
@@ -25,15 +26,12 @@ public class Inventory implements Serializable {
     @Column(name = "id")
     private Long id;
 
+    @OneToMany(mappedBy = "inventory", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<InventoryItem> inventoryItems;
+
     @ManyToOne
     @JoinColumn(name="warehouse_id", nullable=false)
     private Warehouse warehouse;
-
-    @ManyToOne
-    @JoinColumn(name="product_id", nullable=false)
-    private Product product;
-
-    private long amount;
 
     @CreationTimestamp
     private Timestamp updatedAt;
