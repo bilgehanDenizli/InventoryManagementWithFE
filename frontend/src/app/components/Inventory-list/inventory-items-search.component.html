@@ -1,0 +1,23 @@
+<div class="filter-form">
+  <label for="filterType">Filter Type:</label>
+  <select id="filterType" [(ngModel)]="filterRequest.filterType">
+    @for (ft of filterTypes; track ft) {
+      <option [ngValue]="ft">{{ ft }}</option>
+    }
+  </select>
+
+  <label for="filterValue">Filter Value:</label>
+  <input
+    id="filterValue"
+    type="text"
+    [(ngModel)]="filterRequest.filterValue"
+    placeholder="Enter value"
+  />
+
+  <button type="button" (click)="submit()">Submit</button>
+
+  @if (filterRequest.filterType === 'warehouse_city') {
+    <p class="hint">Tip: Enter a valid city name like Istanbul or Ankara.</p>
+  }
+</div>
+
