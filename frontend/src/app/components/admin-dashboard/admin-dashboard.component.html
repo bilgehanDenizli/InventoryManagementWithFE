@@ -1,0 +1,346 @@
+<div class="shell">
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Inventory Admin Console</p>
+      <h1>Manage products, stock, warehouses, and history from one frontend.</h1>
+      <p class="lede">
+        This UI is wired directly into the Spring backend so we can add products, search inventory,
+        adjust stock, and review movement logs without touching Postman.
+      </p>
+    </div>
+
+    <div class="hero-stats">
+      <article class="stat-card">
+        <span>Products</span>
+        <strong>{{ products().length }}</strong>
+      </article>
+      <article class="stat-card">
+        <span>Warehouses</span>
+        <strong>{{ warehouses().length }}</strong>
+      </article>
+      <article class="stat-card">
+        <span>Visible Inventory Rows</span>
+        <strong>{{ inventoryItems().length }}</strong>
+      </article>
+    </div>
+  </header>
+
+  @if (globalMessage()) {
+    <div class="banner success">{{ globalMessage() }}</div>
+  }
+
+  @if (globalError()) {
+    <div class="banner error">{{ globalError() }}</div>
+  }
+
+  <section class="dashboard-grid">
+    <article class="panel panel-wide">
+      <div class="panel-header">
+        <div>
+          <p class="section-kicker">Catalog</p>
+          <h2>{{ productFormTitle() }}</h2>
+        </div>
+        @if (selectedProductId()) {
+          <button class="ghost-button" type="button" (click)="resetProductForm()">Cancel edit</button>
+        }
+      </div>
+
+      <form class="form-grid" [formGroup]="productForm" (ngSubmit)="submitProduct()">
+        <label>
+          <span>Product name</span>
+          <input type="text" formControlName="name" placeholder="A4 Paper" />
+        </label>
+
+        <label>
+          <span>Category</span>
+          <select formControlName="categoryId">
+            <option [value]="0">Select category</option>
+            @for (category of categories(); track category.id) {
+              <option [value]="category.id">{{ category.category }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="form-actions">
+          <button class="primary-button" type="submit" [disabled]="isSavingProduct()">
+            {{ isSavingProduct() ? 'Saving...' : selectedProductId() ? 'Update Product' : 'Create Product' }}
+          </button>
+        </div>
+      </form>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Category</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (product of products(); track product.id) {
+              <tr>
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.productCategory.category }}</td>
+                <td class="actions-cell">
+                  <button class="ghost-button" type="button" (click)="editProduct(product)">Edit</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="section-kicker">Inventory Search</p>
+          <h2>Query stock by backend filter</h2>
+        </div>
+      </div>
+
+      <form class="stack-form" [formGroup]="inventoryFilterForm" (ngSubmit)="searchInventory()">
+        <label>
+          <span>Filter type</span>
+          <select formControlName="filterType">
+            @for (option of filterOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Filter value</span>
+          <input type="text" formControlName="filterValue" [placeholder]="activeFilterPlaceholder()" />
+        </label>
+
+        <button class="primary-button" type="submit" [disabled]="isLoadingInventory()">
+          {{ isLoadingInventory() ? 'Searching...' : 'Search Inventory' }}
+        </button>
+      </form>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="section-kicker">Stock Control</p>
+          <h2>Add or take stock</h2>
+        </div>
+      </div>
+
+      <form class="stack-form" [formGroup]="stockAdjustmentForm" (ngSubmit)="submitStockAdjustment()">
+        <label>
+          <span>Product</span>
+          <select formControlName="productId">
+            <option [value]="0">Select product</option>
+            @for (product of products(); track product.id) {
+              <option [value]="product.id">{{ product.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Warehouse</span>
+          <select formControlName="warehouseId">
+            <option [value]="0">Select warehouse</option>
+            @for (warehouse of warehouses(); track warehouse.id) {
+              <option [value]="warehouse.id">{{ warehouse.name }} / {{ warehouse.city }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Action</span>
+          <select formControlName="action">
+            <option value="ADD">Add stock</option>
+            <option value="TAKE">Take stock</option>
+          </select>
+        </label>
+
+        <label>
+          <span>Amount</span>
+          <input type="number" min="1" formControlName="amount" />
+        </label>
+
+        <button class="primary-button" type="submit" [disabled]="isAdjustingInventory()">
+          {{ isAdjustingInventory() ? 'Submitting...' : 'Apply Stock Change' }}
+        </button>
+      </form>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="section-kicker">Soft Delete</p>
+          <h2>Remove an inventory row</h2>
+        </div>
+      </div>
+
+      <form class="stack-form" [formGroup]="removalForm" (ngSubmit)="submitRemoval()">
+        <label>
+          <span>Product</span>
+          <select formControlName="productId">
+            <option [value]="0">Select product</option>
+            @for (product of products(); track product.id) {
+              <option [value]="product.id">{{ product.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label>
+          <span>Warehouse</span>
+          <select formControlName="warehouseId">
+            <option [value]="0">Select warehouse</option>
+            @for (warehouse of warehouses(); track warehouse.id) {
+              <option [value]="warehouse.id">{{ warehouse.name }} / {{ warehouse.city }}</option>
+            }
+          </select>
+        </label>
+
+        <button class="danger-button" type="submit">Delete Inventory Entry</button>
+      </form>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <p class="section-kicker">Inventory</p>
+        <h2>Filtered inventory results</h2>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Inventory ID</th>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Warehouse</th>
+            <th>City</th>
+            <th>Amount</th>
+            <th>Updated</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of inventoryItems(); track item.inventoryId) {
+            <tr>
+              <td>{{ item.inventoryId }}</td>
+              <td>{{ item.product.name }}</td>
+              <td>{{ item.product.productCategory.category }}</td>
+              <td>{{ item.warehouse.name }}</td>
+              <td>{{ item.warehouse.city }}</td>
+              <td>{{ item.amount }}</td>
+              <td>{{ item.updatedAt | date: 'medium' }}</td>
+              <td class="actions-cell">
+                <button
+                  class="ghost-button"
+                  type="button"
+                  (click)="deleteInventoryItem(item.product.id, item.warehouse.id)">
+                  Delete
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="empty-state">No inventory rows match the current filter.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="two-column">
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="section-kicker">Warehouses</p>
+          <h2>Backend warehouse page {{ currentWarehousePage() + 1 }}</h2>
+        </div>
+        <div class="pager">
+          <button class="ghost-button" type="button" [disabled]="currentWarehousePage() === 0" (click)="previousWarehousePage()">
+            Previous
+          </button>
+          <button class="ghost-button" type="button" (click)="nextWarehousePage()">Next</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>City</th>
+              <th>Region</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (warehouse of warehouses(); track warehouse.id) {
+              <tr>
+                <td>{{ warehouse.id }}</td>
+                <td>{{ warehouse.name }}</td>
+                <td>{{ warehouse.city }}</td>
+                <td>{{ warehouse.region }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="panel">
+      <div class="panel-header">
+        <div>
+          <p class="section-kicker">History</p>
+          <h2>Inventory changes</h2>
+        </div>
+        <div class="pager">
+          <button class="ghost-button" type="button" [disabled]="currentHistoryPage() === 0" (click)="previousHistoryPage()">
+            Previous
+          </button>
+          <button class="ghost-button" type="button" (click)="nextHistoryPage()">Next</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Product ID</th>
+              <th>Warehouse ID</th>
+              <th>Change</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (history of historyItems(); track history.id) {
+              <tr>
+                <td>{{ history.id }}</td>
+                <td>{{ history.productId }}</td>
+                <td>{{ history.warehouseId }}</td>
+                <td [class.positive]="history.amountChange > 0" [class.negative]="history.amountChange < 0">
+                  {{ history.amountChange }}
+                </td>
+                <td>{{ history.createdAt | date: 'medium' }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="empty-state">
+                  {{ isLoadingHistory() ? 'Loading history...' : 'No history rows returned.' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</div>
