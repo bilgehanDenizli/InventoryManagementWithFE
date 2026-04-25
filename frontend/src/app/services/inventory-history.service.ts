@@ -19,4 +19,8 @@ export class InventoryHistoryService {
   getHistory(request: HistoryRequest): Observable<InventoryHistory[]> {
     return this.http.post<InventoryHistory[]>(`${this.apiUrl}/`, request);
   }
+
+  triggerBatchInsert(): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/batch-insert`, {});
+  }
 }

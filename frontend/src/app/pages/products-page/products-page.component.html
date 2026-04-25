@@ -1,0 +1,154 @@
+<div class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="page-kicker">Products</p>
+      <h1>Product catalog</h1>
+      <p class="page-subtitle">Create, update, archive, and inspect products from the catalog service.</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="button-secondary" type="button" (click)="loadProducts()">Refresh</button>
+      @if (selectedProductId()) {
+        <button class="button-secondary" type="button" (click)="resetForm()">Cancel edit</button>
+      }
+    </div>
+  </header>
+
+  @if (message()) {
+    <div class="banner banner--success">{{ message() }}</div>
+  }
+
+  @if (error()) {
+    <div class="banner banner--error">{{ error() }}</div>
+  }
+
+  <section class="metric-strip">
+    <article class="metric">
+      <span class="metric-label">Products</span>
+      <strong class="metric-value">{{ products().length }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Categories</span>
+      <strong class="metric-value">{{ categories().length }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Lookup loaded</span>
+      <strong class="metric-value">{{ productDetail() ? 'Yes' : 'No' }}</strong>
+    </article>
+  </section>
+
+  <section class="section-grid section-grid--split">
+    <article class="surface">
+      <div class="surface-header">
+        <div>
+          <h2>{{ productFormTitle() }}</h2>
+          <p class="surface-subtitle">Write changes back to the product service.</p>
+        </div>
+      </div>
+
+      <form class="form-grid" [formGroup]="productForm" (ngSubmit)="submitProduct()">
+        <label class="field">
+          <span class="field-label">Product name</span>
+          <input type="text" formControlName="name" />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Category</span>
+          <select formControlName="categoryId">
+            <option [value]="0">Select category</option>
+            @for (category of categories(); track category.id) {
+              <option [value]="category.id">{{ category.category }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="action-row">
+          <button class="button-primary" type="submit" [disabled]="isSaving()">
+            {{ isSaving() ? 'Saving...' : selectedProductId() ? 'Update product' : 'Create product' }}
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="surface">
+      <div class="surface-header">
+        <div>
+          <h2>Product lookup</h2>
+          <p class="surface-subtitle">Fetch a single product record.</p>
+        </div>
+      </div>
+
+      <form class="form-grid form-grid--compact" [formGroup]="lookupForm" (ngSubmit)="lookupProduct()">
+        <label class="field">
+          <span class="field-label">Product ID</span>
+          <input type="number" min="1" formControlName="productId" />
+        </label>
+
+        <div class="action-row">
+          <button class="button-primary" type="submit" [disabled]="isLoadingDetail()">
+            {{ isLoadingDetail() ? 'Loading...' : 'Load product' }}
+          </button>
+        </div>
+      </form>
+
+      @if (productDetail(); as product) {
+        <dl class="detail-list">
+          <div>
+            <dt>ID</dt>
+            <dd>{{ product.id }}</dd>
+          </div>
+          <div>
+            <dt>Name</dt>
+            <dd>{{ product.name }}</dd>
+          </div>
+          <div>
+            <dt>Category</dt>
+            <dd>{{ product.productCategory.category }}</dd>
+          </div>
+        </dl>
+      }
+    </article>
+  </section>
+
+  <section class="surface">
+    <div class="surface-header">
+      <div>
+        <h2>Catalog list</h2>
+        <p class="surface-subtitle">Visible products returned by the backend.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of products(); track product.id) {
+            <tr>
+              <td>{{ product.id }}</td>
+              <td>{{ product.name }}</td>
+              <td>{{ product.productCategory.category }}</td>
+              <td class="table-actions">
+                <button class="button-secondary button--small" type="button" (click)="editProduct(product)">Edit</button>
+                <button class="button-danger button--small" type="button" [disabled]="isArchiving()" (click)="archiveProduct(product)">
+                  Archive
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="empty-row">
+                {{ isLoadingProducts() ? 'Loading products...' : 'No products returned.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

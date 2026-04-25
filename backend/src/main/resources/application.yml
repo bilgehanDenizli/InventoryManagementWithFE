@@ -9,28 +9,28 @@ spring:
     show-sql: 'true'
     hibernate:
       ddl-auto: update
-
-server:
-  port: 8080
-#KAFKA
+  #KAFKA
   kafka:
     bootstrap-server: "127.0.0.1:9092"
     group-id: "group-1"
     producer:
       key-serializer: "org.apache.kafka.common.serialization.StringSerializer"
       value-serializer: "org.springframework.kafka.support.serializer.JsonSerializer"
-#    consumer:
-#      key-deserializer: "org.apache.kafka.common.serialization.StringDeserializer"
-#      value-deserializer: "org.springframework.kafka.support.serializer.JsonDeserializer"
-#      auto-offset-reset: "earliest"
-#      properties:
-#        spring:
-#          json:
-#            trusted:
-#              packages: '*'
-#        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
-#        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
-#KAFKA
+  #    consumer:
+  #      key-deserializer: "org.apache.kafka.common.serialization.StringDeserializer"
+  #      value-deserializer: "org.springframework.kafka.support.serializer.JsonDeserializer"
+  #      auto-offset-reset: "earliest"
+  #      properties:
+  #        spring:
+  #          json:
+  #            trusted:
+  #              packages: '*'
+  #        spring.deserializer.key.delegate.class: org.apache.kafka.common.serialization.StringDeserializer
+  #        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+  #KAFKA
+
+server:
+  port: 8080
 
 #hz-client:
 #  cluster-name: Inventory-Management

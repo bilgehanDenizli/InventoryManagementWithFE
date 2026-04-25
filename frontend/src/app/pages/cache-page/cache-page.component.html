@@ -1,0 +1,92 @@
+<div class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="page-kicker">Cache</p>
+      <h1>Cache controls</h1>
+      <p class="page-subtitle">Run the backend cache flush actions from the UI.</p>
+    </div>
+  </header>
+
+  @if (message()) {
+    <div class="banner banner--success">{{ message() }}</div>
+  }
+
+  @if (error()) {
+    <div class="banner banner--error">{{ error() }}</div>
+  }
+
+  <section class="metric-strip">
+    <article class="metric">
+      <span class="metric-label">Named caches</span>
+      <strong class="metric-value">{{ cacheNames.length }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Flush all</span>
+      <strong class="metric-value">{{ isFlushingAll() ? 'Busy' : 'Ready' }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Flush one</span>
+      <strong class="metric-value">{{ isFlushingOne() ? 'Busy' : 'Ready' }}</strong>
+    </article>
+  </section>
+
+  <section class="section-grid section-grid--split">
+    <article class="surface">
+      <div class="surface-header">
+        <div>
+          <h2>Flush everything</h2>
+          <p class="surface-subtitle">Send the global cache invalidation event.</p>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="button-danger" type="button" [disabled]="isFlushingAll()" (click)="flushAll()">
+          {{ isFlushingAll() ? 'Flushing...' : 'Flush all caches' }}
+        </button>
+      </div>
+    </article>
+
+    <article class="surface">
+      <div class="surface-header">
+        <div>
+          <h2>Flush by cache name</h2>
+          <p class="surface-subtitle">Target one cache group.</p>
+        </div>
+      </div>
+
+      <form class="form-grid form-grid--compact" [formGroup]="cacheForm" (ngSubmit)="flushByName()">
+        <label class="field">
+          <span class="field-label">Cache name</span>
+          <select formControlName="cacheName">
+            @for (cacheName of cacheNames; track cacheName) {
+              <option [value]="cacheName">{{ cacheName }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="action-row">
+          <button class="button-primary" type="submit" [disabled]="isFlushingOne()">
+            {{ isFlushingOne() ? 'Flushing...' : 'Flush selected cache' }}
+          </button>
+        </div>
+      </form>
+    </article>
+  </section>
+
+  <section class="surface">
+    <div class="surface-header">
+      <div>
+        <h2>Available cache names</h2>
+        <p class="surface-subtitle">These match the backend Hazelcast cache keys.</p>
+      </div>
+    </div>
+
+    <div class="tag-grid">
+      @for (cacheName of cacheNames; track cacheName) {
+        <article class="tag-tile">
+          <strong>{{ cacheName }}</strong>
+        </article>
+      }
+    </div>
+  </section>
+</div>

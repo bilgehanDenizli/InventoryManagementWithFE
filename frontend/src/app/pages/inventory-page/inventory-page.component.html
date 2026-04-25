@@ -1,0 +1,196 @@
+<div class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="page-kicker">Inventory</p>
+      <h1>Inventory operations</h1>
+      <p class="page-subtitle">Search inventory, adjust stock, and remove warehouse-product rows.</p>
+    </div>
+  </header>
+
+  @if (message()) {
+    <div class="banner banner--success">{{ message() }}</div>
+  }
+
+  @if (error()) {
+    <div class="banner banner--error">{{ error() }}</div>
+  }
+
+  <section class="metric-strip">
+    <article class="metric">
+      <span class="metric-label">Visible rows</span>
+      <strong class="metric-value">{{ inventoryItems().length }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Units in result</span>
+      <strong class="metric-value">{{ totalUnits() }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Selectable warehouses</span>
+      <strong class="metric-value">{{ warehouses().length }}</strong>
+    </article>
+  </section>
+
+  <section class="section-grid section-grid--three">
+    <article class="surface">
+      <div class="surface-header">
+        <div>
+          <h2>Inventory query</h2>
+          <p class="surface-subtitle">Use the unified inventory filter endpoint.</p>
+        </div>
+      </div>
+
+      <form class="form-grid form-grid--stacked" [formGroup]="inventoryFilterForm" (ngSubmit)="searchInventory()">
+        <label class="field">
+          <span class="field-label">Filter type</span>
+          <select formControlName="filterType">
+            @for (option of filterOptions; track option.value) {
+              <option [value]="option.value">{{ option.label }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Filter value</span>
+          <input type="text" formControlName="filterValue" [placeholder]="activeFilterPlaceholder()" />
+        </label>
+
+        <div class="action-row">
+          <button class="button-primary" type="submit" [disabled]="isLoadingInventory()">
+            {{ isLoadingInventory() ? 'Searching...' : 'Search inventory' }}
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="surface">
+      <div class="surface-header">
+        <div>
+          <h2>Stock adjustment</h2>
+          <p class="surface-subtitle">Add or take product quantity.</p>
+        </div>
+      </div>
+
+      <form class="form-grid form-grid--stacked" [formGroup]="stockAdjustmentForm" (ngSubmit)="submitStockAdjustment()">
+        <label class="field">
+          <span class="field-label">Product</span>
+          <select formControlName="productId">
+            <option [value]="0">Select product</option>
+            @for (product of products(); track product.id) {
+              <option [value]="product.id">{{ product.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Warehouse</span>
+          <select formControlName="warehouseId">
+            <option [value]="0">Select warehouse</option>
+            @for (warehouse of warehouses(); track warehouse.id) {
+              <option [value]="warehouse.id">{{ warehouse.name }} / {{ warehouse.city }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Action</span>
+          <select formControlName="action">
+            <option value="ADD">Add stock</option>
+            <option value="TAKE">Take stock</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Amount</span>
+          <input type="number" min="1" formControlName="amount" />
+        </label>
+
+        <div class="action-row">
+          <button class="button-primary" type="submit" [disabled]="isAdjusting()">
+            {{ isAdjusting() ? 'Submitting...' : 'Apply change' }}
+          </button>
+        </div>
+      </form>
+    </article>
+
+    <article class="surface">
+      <div class="surface-header">
+        <div>
+          <h2>Soft delete row</h2>
+          <p class="surface-subtitle">Remove an inventory record for one warehouse-product pair.</p>
+        </div>
+      </div>
+
+      <form class="form-grid form-grid--stacked" [formGroup]="removalForm" (ngSubmit)="submitRemoval()">
+        <label class="field">
+          <span class="field-label">Product</span>
+          <select formControlName="productId">
+            <option [value]="0">Select product</option>
+            @for (product of products(); track product.id) {
+              <option [value]="product.id">{{ product.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Warehouse</span>
+          <select formControlName="warehouseId">
+            <option [value]="0">Select warehouse</option>
+            @for (warehouse of warehouses(); track warehouse.id) {
+              <option [value]="warehouse.id">{{ warehouse.name }} / {{ warehouse.city }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="action-row">
+          <button class="button-danger" type="submit" [disabled]="isDeleting()">
+            {{ isDeleting() ? 'Removing...' : 'Delete inventory row' }}
+          </button>
+        </div>
+      </form>
+    </article>
+  </section>
+
+  <section class="surface">
+    <div class="surface-header">
+      <div>
+        <h2>Inventory result table</h2>
+        <p class="surface-subtitle">Current filter output.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Inventory ID</th>
+            <th>Product</th>
+            <th>Category</th>
+            <th>Warehouse</th>
+            <th>City</th>
+            <th>Amount</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of inventoryItems(); track item.inventoryId) {
+            <tr>
+              <td>{{ item.inventoryId }}</td>
+              <td>{{ item.product.name }}</td>
+              <td>{{ item.product.productCategory.category }}</td>
+              <td>{{ item.warehouse.name }}</td>
+              <td>{{ item.warehouse.city }}</td>
+              <td>{{ item.amount }}</td>
+              <td>{{ item.updatedAt | date: 'medium' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="empty-row">
+                {{ isLoadingInventory() ? 'Loading inventory...' : 'No inventory rows match the current filter.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
