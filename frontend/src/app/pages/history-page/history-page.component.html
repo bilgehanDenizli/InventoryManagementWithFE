@@ -1,0 +1,88 @@
+<div class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="page-kicker">History</p>
+      <h1>Inventory history</h1>
+      <p class="page-subtitle">Track stock movement events and trigger batch history generation.</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="button-secondary" type="button" (click)="loadHistory(0)">Refresh</button>
+      <button class="button-primary" type="button" [disabled]="isGenerating()" (click)="generateBatch()">
+        {{ isGenerating() ? 'Sending...' : 'Generate batch events' }}
+      </button>
+    </div>
+  </header>
+
+  @if (message()) {
+    <div class="banner banner--success">{{ message() }}</div>
+  }
+
+  @if (error()) {
+    <div class="banner banner--error">{{ error() }}</div>
+  }
+
+  <section class="metric-strip">
+    <article class="metric">
+      <span class="metric-label">Rows on page</span>
+      <strong class="metric-value">{{ historyItems().length }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Positive changes</span>
+      <strong class="metric-value">{{ positiveCount() }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Net change</span>
+      <strong class="metric-value">{{ netChange() }}</strong>
+    </article>
+  </section>
+
+  <section class="surface">
+    <div class="surface-header">
+      <div>
+        <h2>History log</h2>
+        <p class="surface-subtitle">Page {{ currentPage() + 1 }}</p>
+      </div>
+      <div class="pager">
+        <button class="button-secondary button--small" type="button" [disabled]="currentPage() === 0" (click)="previousPage()">
+          Previous
+        </button>
+        <button class="button-secondary button--small" type="button" (click)="nextPage()">Next</button>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Product ID</th>
+            <th>Warehouse ID</th>
+            <th>Amount change</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of historyItems(); track item.id) {
+            <tr>
+              <td>{{ item.id }}</td>
+              <td>{{ item.productId }}</td>
+              <td>{{ item.warehouseId }}</td>
+              <td>
+                <span class="trend" [class.trend--positive]="item.amountChange > 0" [class.trend--negative]="item.amountChange < 0">
+                  {{ item.amountChange }}
+                </span>
+              </td>
+              <td>{{ item.createdAt | date: 'medium' }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty-row">
+                {{ isLoading() ? 'Loading history...' : 'No history rows returned.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

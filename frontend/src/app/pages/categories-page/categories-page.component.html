@@ -1,0 +1,87 @@
+<div class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="page-kicker">Categories</p>
+      <h1>Product categories</h1>
+      <p class="page-subtitle">Review the category list exposed by the backend.</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="button-secondary" type="button" (click)="loadCategories()">Refresh</button>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="banner banner--error">{{ error() }}</div>
+  }
+
+  <section class="metric-strip">
+    <article class="metric">
+      <span class="metric-label">Categories</span>
+      <strong class="metric-value">{{ categories().length }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Longest label</span>
+      <strong class="metric-value metric-value--text">{{ longestName() || 'None' }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Load state</span>
+      <strong class="metric-value">{{ isLoading() ? 'Busy' : 'Ready' }}</strong>
+    </article>
+  </section>
+
+  <section class="surface">
+    <div class="surface-header">
+      <div>
+        <h2>Category index</h2>
+        <p class="surface-subtitle">Every category available from the product category service.</p>
+      </div>
+    </div>
+
+    <div class="tag-grid">
+      @for (category of categories(); track category.id) {
+        <article class="tag-tile">
+          <span class="tag-tile__id">#{{ category.id }}</span>
+          <strong>{{ category.category }}</strong>
+        </article>
+      } @empty {
+        <div class="empty-row empty-row--block">
+          {{ isLoading() ? 'Loading categories...' : 'No categories returned.' }}
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="surface">
+    <div class="surface-header">
+      <div>
+        <h2>Category table</h2>
+        <p class="surface-subtitle">Tabular view for quick scanning.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Category</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (category of categories(); track category.id) {
+            <tr>
+              <td>{{ category.id }}</td>
+              <td>{{ category.category }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="2" class="empty-row">
+                {{ isLoading() ? 'Loading categories...' : 'No categories returned.' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

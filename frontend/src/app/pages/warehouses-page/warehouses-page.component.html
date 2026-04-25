@@ -1,0 +1,126 @@
+<div class="page-shell">
+  <header class="page-header">
+    <div>
+      <p class="page-kicker">Warehouses</p>
+      <h1>Warehouse directory</h1>
+      <p class="page-subtitle">Browse paged warehouse data and pull a single record by ID.</p>
+    </div>
+    <div class="page-header__actions">
+      <button class="button-secondary" type="button" (click)="loadWarehouses(0)">Refresh</button>
+    </div>
+  </header>
+
+  @if (message()) {
+    <div class="banner banner--success">{{ message() }}</div>
+  }
+
+  @if (error()) {
+    <div class="banner banner--error">{{ error() }}</div>
+  }
+
+  <section class="metric-strip">
+    <article class="metric">
+      <span class="metric-label">Rows on page</span>
+      <strong class="metric-value">{{ warehouses().length }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Cities on page</span>
+      <strong class="metric-value">{{ cityCount() }}</strong>
+    </article>
+    <article class="metric">
+      <span class="metric-label">Regions on page</span>
+      <strong class="metric-value">{{ regionCount() }}</strong>
+    </article>
+  </section>
+
+  <section class="section-grid section-grid--sidebar">
+    <article class="surface">
+      <div class="surface-header">
+        <div>
+          <h2>Warehouse lookup</h2>
+          <p class="surface-subtitle">Fetch one warehouse record.</p>
+        </div>
+        @if (selectedWarehouse()) {
+          <button class="button-secondary button--small" type="button" (click)="clearSelection()">Clear</button>
+        }
+      </div>
+
+      <form class="form-grid form-grid--compact" [formGroup]="lookupForm" (ngSubmit)="lookupWarehouse()">
+        <label class="field">
+          <span class="field-label">Warehouse ID</span>
+          <input type="number" min="1" formControlName="warehouseId" />
+        </label>
+        <div class="action-row">
+          <button class="button-primary" type="submit" [disabled]="isLoadingDetail()">
+            {{ isLoadingDetail() ? 'Loading...' : 'Load warehouse' }}
+          </button>
+        </div>
+      </form>
+
+      @if (selectedWarehouse(); as warehouse) {
+        <dl class="detail-list">
+          <div>
+            <dt>ID</dt>
+            <dd>{{ warehouse.id }}</dd>
+          </div>
+          <div>
+            <dt>Name</dt>
+            <dd>{{ warehouse.name }}</dd>
+          </div>
+          <div>
+            <dt>City</dt>
+            <dd>{{ warehouse.city }}</dd>
+          </div>
+          <div>
+            <dt>Region</dt>
+            <dd>{{ warehouse.region }}</dd>
+          </div>
+        </dl>
+      }
+    </article>
+
+    <article class="surface">
+      <div class="surface-header">
+        <div>
+          <h2>Warehouse list</h2>
+          <p class="surface-subtitle">Page {{ currentPage() + 1 }}</p>
+        </div>
+        <div class="pager">
+          <button class="button-secondary button--small" type="button" [disabled]="currentPage() === 0" (click)="previousPage()">
+            Previous
+          </button>
+          <button class="button-secondary button--small" type="button" (click)="nextPage()">Next</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>City</th>
+              <th>Region</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (warehouse of warehouses(); track warehouse.id) {
+              <tr>
+                <td>{{ warehouse.id }}</td>
+                <td>{{ warehouse.name }}</td>
+                <td>{{ warehouse.city }}</td>
+                <td>{{ warehouse.region }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="empty-row">
+                  {{ isLoadingList() ? 'Loading warehouses...' : 'No warehouses returned for this page.' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</div>
